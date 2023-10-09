@@ -1,0 +1,71 @@
+### /add
+
+POST http://localhost:8080/api/software/add
+Content-Type: application/json
+Accept: text/plain
+
+{
+  "name": "Svelte",
+  "description": "svelte is the best JS-framework",
+  "website": "https://svelte.dev",
+  "repository": "https://github.com/sveltejs/svelte",
+  "isOpenSource": true
+}
+
+### /{softwareName}
+
+GET http://localhost:8080/api/software/Svelte
+Accept: application/json
+
+### /remove/{softwareName}
+
+POST http://localhost:8080/api/software/remove/Svelte
+Accept: text/plain
+
+### /asList
+
+GET http://localhost:8080/api/software/asList
+Accept: application/json
+
+### /add
+
+POST http://localhost:8080/api/software/add
+Content-Type: application/json
+Accept: text/plain
+
+{
+  "name": "Svelte",
+  "description": "svelte is the best JS-framework",
+  "website": "https://svelte.dev",
+  "repository": "https://github.com/sveltejs/svelte",
+  "isOpenSource": true
+}
+
+### /amount
+
+GET http://localhost:8080/api/software/amount
+Accept: text/plain
+
+### /add
+
+POST http://localhost:8080/api/software/add
+Content-Type: application/json
+Accept: text/plain
+
+{
+  "name": "SvelteKit",
+  "description": "svelteKit is the best JS-meta-framework",
+  "website": "https://kit.svelte.dev",
+  "repository": "https://github.com/sveltejs/kit",
+  "isOpenSource": true
+}
+
+### /amount
+
+GET http://localhost:8080/api/software/amountOpenSource
+Accept: text/plain
+
+### /asList
+
+GET http://localhost:8080/api/software/asList
+Accept: application/json
