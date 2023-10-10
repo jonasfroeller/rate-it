@@ -1,25 +1,19 @@
 package at.htlleonding.jonasfroeller.quarkus.repository;
 
 import at.htlleonding.jonasfroeller.quarkus.model.Software;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+@ApplicationScoped
 public class SoftwareRepository {
-    private static SoftwareRepository instance;
     private final Map<String, Software> softwareMap;
 
-    private SoftwareRepository() {
+    public SoftwareRepository() {
         this.softwareMap = new HashMap<>();
-    }
-
-    public static SoftwareRepository getInstance() {
-        if (instance == null) {
-            instance = new SoftwareRepository();
-        }
-        return instance;
     }
 
     public boolean addSoftware(Software software) {
