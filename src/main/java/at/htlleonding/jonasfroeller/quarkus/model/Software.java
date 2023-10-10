@@ -38,6 +38,21 @@ public class Software {
 
     public Software() {}
 
+    public Software(String name) {
+        this.setName(name);
+    }
+
+    public Software(String name, String description) {
+        this.setName(name);
+        this.setDescription(description);
+    }
+
+    public Software(String name, String description, String website) { // set description to null if you don't want one
+        this.setName(name);
+        this.setDescription(description);
+        this.setWebsite(website);
+    }
+
     public Software(String name, String description, String website, String repository, boolean isOpenSource) {
         this.setName(name);
         this.setDescription(description);
@@ -71,19 +86,21 @@ public class Software {
     }
 
     public void setName(String name) {
-        if (name != null && name.length() >= 2) {
+        name = name != null ? name.trim() : "";
+
+        if (!name.isEmpty()) {
             this.name = name;
         } else {
-            throw new IllegalArgumentException("Software name has to be greater or equal to two.");
+            throw new IllegalArgumentException("Software has to have a name!");
         }
     }
 
     public void setDescription(String description) {
-        this.description = description;
+        this.description = description != null ? description : "";
     }
 
     public void setWebsite(String website) {
-        if (isValidLink(website)) {
+        if (website != null && isValidLink(website)) {
             this.website = website;
         } else {
             throw new IllegalArgumentException("Website url is not a valid url!");
@@ -91,7 +108,7 @@ public class Software {
     }
 
     public void setRepository(String repository) {
-        if (isValidLink(repository)) {
+        if (repository != null && isValidLink(repository)) {
             this.repository = repository;
         } else {
             throw new IllegalArgumentException("Repository url is not a valid url!");
