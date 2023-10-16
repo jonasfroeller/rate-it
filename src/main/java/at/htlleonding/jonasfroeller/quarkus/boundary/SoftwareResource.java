@@ -15,14 +15,17 @@ public class SoftwareResource {
     
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     @Path("/add")
     public boolean addSoftware(Software software) {
         return this.softwareRepository.addSoftware(software);
     }
 
     @POST
-    @Path("/remove/{softwareName}")
-    public boolean removeSoftware(@PathParam("softwareName") String name) {
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("/remove")
+    public boolean removeSoftware(String name) {
         return this.softwareRepository.removeSoftware(name);
     }
 
@@ -42,9 +45,37 @@ public class SoftwareResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/asList")
+    @Path("/as-list")
     public List<Software> listSoftware() {
         return this.softwareRepository.getEverySoftware();
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/having/description/as-list")
+    public List<Software> listSoftwareHavingDescription() {
+        return this.softwareRepository.getEverySoftwareHavingDescription();
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/having/website/as-list")
+    public List<Software> listSoftwareHavingWebsite() {
+        return this.softwareRepository.getEverySoftwareHavingWebsite();
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/having/repository/as-list")
+    public List<Software> listSoftwareHavingRepository() {
+        return this.softwareRepository.getEverySoftwareHavingRepository();
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/having/open-source/as-list")
+    public List<Software> listSoftwareBeingOpenSource() {
+        return this.softwareRepository.getEverySoftwareBeingOpenSource();
     }
 
     @GET
@@ -56,8 +87,29 @@ public class SoftwareResource {
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    @Path("/amountOpenSource")
+    @Path("/amount/having/description")
+    public long getAmountHavingDescription() {
+        return this.softwareRepository.getAmountHavingDescription();
+    }
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("/amount/having/website")
+    public long getAmountHavingWebsite() {
+        return this.softwareRepository.getAmountHavingWebsite();
+    }
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("/amount/having/repository")
+    public long getAmountHavingRepository() {
+        return this.softwareRepository.getAmountHavingRepository();
+    }
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("/amount/having/open-source")
     public long getAmountOpenSource() {
-        return this.softwareRepository.getAmountOpenSource();
+        return this.softwareRepository.getAmountBeingOpenSource();
     }
 }

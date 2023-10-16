@@ -18,10 +18,21 @@ import static org.hamcrest.Matchers.is;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class SoftwareResourceTest {
     @Test
+    @Order(-15)
+    void testIfAmountIsCorrect() {
+        String response = given()
+                .when().get("amount")
+                .then()
+                .extract().body().asString();
+
+        Assertions.assertEquals(response, "4");
+    }
+
+    @Test
     @Order(-10)
     void testIfMapContainsAddedSoftware() {
         given()
-                .when().get("asList")
+                .when().get("as-list")
                 .then()
                 .body("size()", is(4))
                 .body("name", hasItems("Svelte", "SvelteKit", "React", "Vue"));
@@ -56,7 +67,7 @@ class SoftwareResourceTest {
         given()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(invalidSoftwareJson.toString())
-                .when().post("/add")
+                .when().post("add")
                 .then().statusCode(400);
     }
 
@@ -71,7 +82,7 @@ class SoftwareResourceTest {
         given()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(invalidLinkJson.toString())
-                .when().post("/add")
+                .when().post("add")
                 .then().statusCode(400);
     }
 
@@ -79,7 +90,7 @@ class SoftwareResourceTest {
     void testAddingDuplicateSoftware() {
         String listBeforeRequest =
                 given()
-                        .when().get("asList")
+                        .when().get("as-list")
                         .then()
                         .extract().body().asString();
 
@@ -94,12 +105,12 @@ class SoftwareResourceTest {
         given()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(svelteJson.toString())
-                .when().post("/add")
+                .when().post("add")
                 .then().statusCode(500);
 
         String listAfterRequest =
                 given()
-                        .when().get("asList")
+                        .when().get("as-list")
                         .then()
                         .extract().body().asString();
 
@@ -110,16 +121,18 @@ class SoftwareResourceTest {
     @Order(999)
     void testRemovingSoftware() {
         String listBeforeRequest = given()
-                .when().get("asList")
+                .when().get("as-list")
                 .then()
                 .extract().body().asString();
 
         given()
-                .when().post("/remove/React")
+                .contentType(MediaType.TEXT_PLAIN)
+                .body("React")
+                .when().post("remove")
                 .then().statusCode(200);
 
         String listAfterRequest = given()
-                .when().get("asList")
+                .when().get("as-list")
                 .then()
                 .extract().body().asString();
 

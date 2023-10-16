@@ -17,14 +17,17 @@ Accept: text/plain
 GET http://localhost:8080/api/software/Svelte
 Accept: application/json
 
-### /remove/{softwareName}
+### /remove
 
-POST http://localhost:8080/api/software/remove/Svelte
+POST http://localhost:8080/api/software/remove
+Content-Type: text/plain
 Accept: text/plain
 
-### /asList
+"Svelte"
 
-GET http://localhost:8080/api/software/asList
+### /as-list
+
+GET http://localhost:8080/api/software/as-list
 Accept: application/json
 
 ### /add
@@ -60,12 +63,12 @@ Accept: text/plain
   "isOpenSource": true
 }
 
-### /amount
+### /amount/having/open-source
 
-GET http://localhost:8080/api/software/amountOpenSource
+GET http://localhost:8080/api/software/amount/having/open-source
 Accept: text/plain
 
-### /asList
+### /as-list
 
-GET http://localhost:8080/api/software/asList
+GET http://localhost:8080/api/software/as-list
 Accept: application/json

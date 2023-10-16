@@ -3,10 +3,7 @@ package at.htlleonding.jonasfroeller.quarkus.repository;
 import at.htlleonding.jonasfroeller.quarkus.model.Software;
 import jakarta.enterprise.context.ApplicationScoped;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @ApplicationScoped
 public class SoftwareRepository {
@@ -40,6 +37,42 @@ public class SoftwareRepository {
         return new LinkedList<>(this.softwareMap.values());
     }
 
+    public List<Software> getEverySoftwareHavingDescription() {
+        return new LinkedList<>(
+                this.softwareMap.values()
+                        .stream()
+                        .filter(software -> Objects.nonNull(software.getDescription()))
+                        .toList()
+        );
+    }
+
+    public List<Software> getEverySoftwareHavingWebsite() {
+        return new LinkedList<>(
+                this.softwareMap.values()
+                        .stream()
+                        .filter(software -> Objects.nonNull(software.getWebsite()))
+                        .toList()
+        );
+    }
+
+    public List<Software> getEverySoftwareHavingRepository() {
+        return new LinkedList<>(
+                this.softwareMap.values()
+                        .stream()
+                        .filter(software -> Objects.nonNull(software.getRepository()))
+                        .toList()
+        );
+    }
+
+    public List<Software> getEverySoftwareBeingOpenSource() {
+        return new LinkedList<>(
+                this.softwareMap.values()
+                        .stream()
+                        .filter(Software::isOpenSource)
+                        .toList()
+        );
+    }
+
     public Software getSoftware(String name) {
         for (Map.Entry<String, Software> entry : this.softwareMap.entrySet()) {
             if (entry.getKey().equalsIgnoreCase(name)) {
@@ -58,7 +91,34 @@ public class SoftwareRepository {
                 .size();
     }
 
-    public long getAmountOpenSource() {
+    public int getAmountHavingDescription() {
+        return this.softwareMap
+                .values()
+                .stream()
+                .filter(software -> Objects.nonNull(software.getDescription()))
+                .toList()
+                .size();
+    }
+
+    public int getAmountHavingWebsite() {
+        return this.softwareMap
+                .values()
+                .stream()
+                .filter(software -> Objects.nonNull(software.getWebsite()))
+                .toList()
+                .size();
+    }
+
+    public int getAmountHavingRepository() {
+        return this.softwareMap
+                .values()
+                .stream()
+                .filter(software -> Objects.nonNull(software.getRepository()))
+                .toList()
+                .size();
+    }
+
+    public long getAmountBeingOpenSource() {
         return this.softwareMap
                 .values()
                 .stream()
