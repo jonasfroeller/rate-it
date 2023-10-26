@@ -2,17 +2,19 @@ package at.htlleonding.jonasfroeller.quarkus.repository;
 
 import at.htlleonding.jonasfroeller.quarkus.model.Software;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import jakarta.transaction.Transactional;
 
 import java.util.*;
 
 @ApplicationScoped
 public class SoftwareRepository {
-    private final Map<String, Software> softwareMap;
+    @Inject
+    private EntityManager entityManager;
 
-    public SoftwareRepository() {
-        this.softwareMap = new HashMap<>();
-    }
-
+    @Transactional
     public boolean addSoftware(Software software) {
         String softwareName = software.getName();
 
@@ -20,27 +22,29 @@ public class SoftwareRepository {
             throw new IllegalArgumentException(String.format("Software with name equal to %s already exists!", softwareName));
         }
 
-        this.softwareMap.put(softwareName, software);
+        this.entityManager.persist(software);
         return true;
     }
 
+    @Transactional
     public boolean removeSoftware(String name) {
-        if (this.getSoftware(name) == null) {
+        Software software = this.getSoftware(name);
+
+        if (software == null) {
             throw new IllegalArgumentException(String.format("Software with name equal to %s doesn't exist!", name));
         }
 
-        this.softwareMap.remove(name);
+        this.entityManager.remove(software);
         return true;
     }
 
     public List<Software> getEverySoftware() {
-        return new LinkedList<>(this.softwareMap.values());
+        return this.entityManager.createQuery("SELECT s FROM Software s").getResultList();
     }
 
     public List<Software> getEverySoftwareHavingDescription() {
         return new LinkedList<>(
-                this.softwareMap.values()
-                        .stream()
+                this.getEverySoftware().stream()
                         .filter(software -> Objects.nonNull(software.getDescription()))
                         .toList()
         );
@@ -48,8 +52,7 @@ public class SoftwareRepository {
 
     public List<Software> getEverySoftwareHavingWebsite() {
         return new LinkedList<>(
-                this.softwareMap.values()
-                        .stream()
+                this.getEverySoftware().stream()
                         .filter(software -> Objects.nonNull(software.getWebsite()))
                         .toList()
         );
@@ -57,8 +60,7 @@ public class SoftwareRepository {
 
     public List<Software> getEverySoftwareHavingRepository() {
         return new LinkedList<>(
-                this.softwareMap.values()
-                        .stream()
+                this.getEverySoftware().stream()
                         .filter(software -> Objects.nonNull(software.getRepository()))
                         .toList()
         );
@@ -66,63 +68,42 @@ public class SoftwareRepository {
 
     public List<Software> getEverySoftwareBeingOpenSource() {
         return new LinkedList<>(
-                this.softwareMap.values()
-                        .stream()
+                this.getEverySoftware().stream()
                         .filter(Software::isOpenSource)
                         .toList()
         );
     }
 
     public Software getSoftware(String name) {
-        for (Map.Entry<String, Software> entry : this.softwareMap.entrySet()) {
-            if (entry.getKey().equalsIgnoreCase(name)) {
-                return entry.getValue();
-            }
-        }
+        TypedQuery<Software> query =
+                entityManager.createQuery("SELECT s FROM Software s WHERE s.name = :name", Software.class).setParameter("name", name);
 
-        return null;
+        List<Software> resultList = query.getResultList();
+
+        if (resultList.isEmpty()) {
+            return null;
+        } else {
+            return resultList.get(0);
+        }
     }
 
     public int getAmount() {
-        return this.softwareMap
-                .values()
-                .stream()
-                .toList()
-                .size();
+        return this.getEverySoftware().size();
     }
 
     public int getAmountHavingDescription() {
-        return this.softwareMap
-                .values()
-                .stream()
-                .filter(software -> Objects.nonNull(software.getDescription()))
-                .toList()
-                .size();
+        return this.getEverySoftwareHavingDescription().size();
     }
 
     public int getAmountHavingWebsite() {
-        return this.softwareMap
-                .values()
-                .stream()
-                .filter(software -> Objects.nonNull(software.getWebsite()))
-                .toList()
-                .size();
+        return this.getEverySoftwareHavingWebsite().size();
     }
 
     public int getAmountHavingRepository() {
-        return this.softwareMap
-                .values()
-                .stream()
-                .filter(software -> Objects.nonNull(software.getRepository()))
-                .toList()
-                .size();
+        return this.getEverySoftwareHavingRepository().size();
     }
 
     public long getAmountBeingOpenSource() {
-        return this.softwareMap
-                .values()
-                .stream()
-                .filter(Software::isOpenSource)
-                .count();
+        return this.getEverySoftwareBeingOpenSource().size();
     }
 }
