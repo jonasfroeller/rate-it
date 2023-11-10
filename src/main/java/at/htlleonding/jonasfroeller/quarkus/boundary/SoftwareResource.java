@@ -4,24 +4,40 @@ import at.htlleonding.jonasfroeller.quarkus.model.Software;
 import at.htlleonding.jonasfroeller.quarkus.repository.SoftwareRepository;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.*;
 
 import java.util.List;
 
 @Path("/api/software")
 public class SoftwareResource {
+    @Context
+    UriInfo uriInfo;
+
     @Inject
     SoftwareRepository softwareRepository;
-    
+
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/add")
-    public boolean addSoftware(Software software) {
-        return this.softwareRepository.addSoftware(software);
+    public Response addSoftware(Software software) {
+        Software softwareAdded = this.softwareRepository.addSoftware(software);
+
+        UriBuilder uriBuilder = this.uriInfo.getAbsolutePathBuilder();
+        uriBuilder.path(Long.toString(softwareAdded.getId()));
+
+        return Response.created(uriBuilder.build()).build();
     }
 
-    @POST
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
+    @Path("/update")
+    public boolean updateSoftware(Software software) {
+        return this.softwareRepository.updateSoftware(software);
+    }
+
+    @DELETE
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/remove")
@@ -88,28 +104,28 @@ public class SoftwareResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/amount/having/description")
-    public long getAmountHavingDescription() {
+    public int getAmountHavingDescription() {
         return this.softwareRepository.getAmountHavingDescription();
     }
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/amount/having/website")
-    public long getAmountHavingWebsite() {
+    public int getAmountHavingWebsite() {
         return this.softwareRepository.getAmountHavingWebsite();
     }
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/amount/having/repository")
-    public long getAmountHavingRepository() {
+    public int getAmountHavingRepository() {
         return this.softwareRepository.getAmountHavingRepository();
     }
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/amount/having/open-source")
-    public long getAmountOpenSource() {
+    public int getAmountOpenSource() {
         return this.softwareRepository.getAmountBeingOpenSource();
     }
 }

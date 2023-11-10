@@ -19,7 +19,7 @@ import static org.hamcrest.Matchers.is;
 class SoftwareResourceTest {
     @Test
     @Order(-15)
-    void testIfAmountIsCorrect() {
+    void testIfSoftwareAmountIsCorrect() {
         String response = given()
                 .when().get("amount")
                 .then()
@@ -118,6 +118,44 @@ class SoftwareResourceTest {
     }
 
     @Test
+    void testUpdatingSoftware() {
+        JsonObject updatedSoftwareJson = Json.createObjectBuilder()
+                .add("name", "Svelte")
+                .add("description", "Updated description.")
+                .add("website", "https://updated-website.com")
+                .build();
+
+        given()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(updatedSoftwareJson.toString())
+                .when().put("update")
+                .then().statusCode(200);
+
+        String updatedInfo = given()
+                .when().get("Svelte")
+                .then()
+                .extract().body().asString();
+
+        assertThat(updatedInfo, containsString("Updated description."));
+        assertThat(updatedInfo, containsString("https://updated-website.com"));
+    }
+
+    @Test
+    void testUpdatingNonExistingSoftware() {
+        JsonObject updatedSoftwareJson = Json.createObjectBuilder()
+                .add("name", "NonExistingSoftware")
+                .add("description", "Updated description")
+                .add("website", "https://updated-website.com")
+                .build();
+
+        given()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(updatedSoftwareJson.toString())
+                .when().put("update")
+                .then().statusCode(404);
+    }
+
+    @Test
     @Order(999)
     void testRemovingSoftware() {
         String listBeforeRequest = given()
@@ -128,7 +166,7 @@ class SoftwareResourceTest {
         given()
                 .contentType(MediaType.TEXT_PLAIN)
                 .body("React")
-                .when().post("remove")
+                .when().delete("remove")
                 .then().statusCode(200);
 
         String listAfterRequest = given()

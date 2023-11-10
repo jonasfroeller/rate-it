@@ -4,24 +4,48 @@ import at.htlleonding.jonasfroeller.quarkus.model.Software;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotFoundException;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 
 @ApplicationScoped
 public class SoftwareRepository {
     @Inject
-    private EntityManager entityManager;
+    EntityManager entityManager;
 
     @Transactional
-    public boolean addSoftware(Software software) {
-        String softwareName = software.getName();
+    public Software addSoftware(Software software) {
+        if (software == null) {
+            return null;
+        }
 
+        String softwareName = software.getName();
         if (this.getSoftware(softwareName) != null) {
             throw new IllegalArgumentException(String.format("Software with name equal to %s already exists!", softwareName));
         }
 
+        this.entityManager.persist(software);
+        return software;
+    }
+
+    @Transactional
+    public boolean updateSoftware(Software software) {
+        if (software == null) {
+            return false;
+        }
+
+        String softwareName = software.getName();
+        Software softwareFound = this.getSoftware(softwareName);
+        if (softwareFound == null) {
+            throw new NotFoundException(String.format("Software with name equal to %s doesn't exist!", softwareName));
+        }
+
+        this.entityManager.remove(softwareFound);
         this.entityManager.persist(software);
         return true;
     }
@@ -31,7 +55,7 @@ public class SoftwareRepository {
         Software software = this.getSoftware(name);
 
         if (software == null) {
-            throw new IllegalArgumentException(String.format("Software with name equal to %s doesn't exist!", name));
+            throw new NotFoundException(String.format("Software with name equal to %s doesn't exist!", name));
         }
 
         this.entityManager.remove(software);
@@ -39,7 +63,7 @@ public class SoftwareRepository {
     }
 
     public List<Software> getEverySoftware() {
-        return this.entityManager.createQuery("SELECT s FROM Software s").getResultList();
+        return this.entityManager.createNamedQuery(Software.QUERY_GET_ALL, Software.class).getResultList();
     }
 
     public List<Software> getEverySoftwareHavingDescription() {
@@ -75,15 +99,13 @@ public class SoftwareRepository {
     }
 
     public Software getSoftware(String name) {
-        TypedQuery<Software> query =
-                entityManager.createQuery("SELECT s FROM Software s WHERE s.name = :name", Software.class).setParameter("name", name);
+        try {
+            TypedQuery<Software> query = entityManager.createNamedQuery(Software.QUERY_GET_ONE, Software.class);
+            query.setParameter("name", name);
 
-        List<Software> resultList = query.getResultList();
-
-        if (resultList.isEmpty()) {
+            return query.getSingleResult();
+        } catch (NoResultException e) {
             return null;
-        } else {
-            return resultList.get(0);
         }
     }
 
@@ -103,7 +125,7 @@ public class SoftwareRepository {
         return this.getEverySoftwareHavingRepository().size();
     }
 
-    public long getAmountBeingOpenSource() {
+    public int getAmountBeingOpenSource() {
         return this.getEverySoftwareBeingOpenSource().size();
     }
 }
