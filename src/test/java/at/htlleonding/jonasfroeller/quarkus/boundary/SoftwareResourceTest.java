@@ -17,22 +17,29 @@ import static org.hamcrest.Matchers.is;
 @TestHTTPEndpoint(SoftwareResource.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class SoftwareResourceTest {
+
+    private static final String SOFTWARE_AMOUNT_ENDPOINT = "amount";
+    private static final String SOFTWARE_LIST_ENDPOINT = "as-list";
+    private static final String ADD_SOFTWARE_ENDPOINT = "add";
+    private static final String UPDATE_SOFTWARE_ENDPOINT = "update";
+    private static final String REMOVE_SOFTWARE_ENDPOINT = "remove";
+
     @Test
     @Order(-15)
-    void testIfSoftwareAmountIsCorrect() {
+    void testGetSoftwareAmountReturnsExpectedValue() {
         String response = given()
-                .when().get("amount")
+                .when().get(SOFTWARE_AMOUNT_ENDPOINT)
                 .then()
                 .extract().body().asString();
 
-        Assertions.assertEquals(response, "4");
+        Assertions.assertEquals("4", response, "The software amount should be 4");
     }
 
     @Test
     @Order(-10)
-    void testIfMapContainsAddedSoftware() {
+    void testGetSoftwareListContainsAddedSoftware() {
         given()
-                .when().get("as-list")
+                .when().get(SOFTWARE_LIST_ENDPOINT)
                 .then()
                 .body("size()", is(4))
                 .body("name", hasItems("Svelte", "SvelteKit", "React", "Vue"));
@@ -40,7 +47,7 @@ class SoftwareResourceTest {
 
     @Test
     @Order(-5)
-    void testDirectSoftwareInfoRoute() {
+    void testGetDirectSoftwareInfoRoute() {
         String response =
                 given()
                         .when().get("Vue")
@@ -52,14 +59,14 @@ class SoftwareResourceTest {
 
     @Test
     @Order(-1)
-    void testDirectSoftwareInfoRouteWithNonExistingSoftware() {
+    void testGetDirectSoftwareInfoRouteWithNonExistingSoftware() {
         given()
                 .when().get("JavaFX")
-                .then().statusCode(204);
+                .then().statusCode(404);
     }
 
     @Test
-    void testAddingSoftwareHavingInvalidName() {
+    void testAddingSoftwareWithInvalidName() {
         JsonObject invalidSoftwareJson = Json.createObjectBuilder()
                 .add("name", "")
                 .build();
@@ -67,12 +74,12 @@ class SoftwareResourceTest {
         given()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(invalidSoftwareJson.toString())
-                .when().post("add")
+                .when().post(ADD_SOFTWARE_ENDPOINT)
                 .then().statusCode(400);
     }
 
     @Test
-    void testAddingSoftwareHavingInvalidLink() { // no tld
+    void testAddingSoftwareWithInvalidLink() {
         JsonObject invalidLinkJson = Json.createObjectBuilder()
                 .add("name", "InvalidLink")
                 .add("description", "Software with invalid link")
@@ -82,15 +89,15 @@ class SoftwareResourceTest {
         given()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(invalidLinkJson.toString())
-                .when().post("add")
+                .when().post(ADD_SOFTWARE_ENDPOINT)
                 .then().statusCode(400);
     }
 
     @Test
-    void testAddingDuplicateSoftware() {
+    void testAddingDuplicateSoftwareShouldFail() {
         String listBeforeRequest =
                 given()
-                        .when().get("as-list")
+                        .when().get(SOFTWARE_LIST_ENDPOINT)
                         .then()
                         .extract().body().asString();
 
@@ -105,16 +112,16 @@ class SoftwareResourceTest {
         given()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(svelteJson.toString())
-                .when().post("add")
-                .then().statusCode(500);
+                .when().post(ADD_SOFTWARE_ENDPOINT)
+                .then().statusCode(400);
 
         String listAfterRequest =
                 given()
-                        .when().get("as-list")
+                        .when().get(SOFTWARE_LIST_ENDPOINT)
                         .then()
                         .extract().body().asString();
 
-        Assertions.assertEquals(listBeforeRequest, listAfterRequest);
+        Assertions.assertEquals(listBeforeRequest, listAfterRequest, "Adding duplicate software should fail");
     }
 
     @Test
@@ -128,7 +135,7 @@ class SoftwareResourceTest {
         given()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(updatedSoftwareJson.toString())
-                .when().put("update")
+                .when().patch(UPDATE_SOFTWARE_ENDPOINT)
                 .then().statusCode(200);
 
         String updatedInfo = given()
@@ -141,7 +148,7 @@ class SoftwareResourceTest {
     }
 
     @Test
-    void testUpdatingNonExistingSoftware() {
+    void testUpdatingNonExistingSoftwareShouldFail() {
         JsonObject updatedSoftwareJson = Json.createObjectBuilder()
                 .add("name", "NonExistingSoftware")
                 .add("description", "Updated description")
@@ -151,7 +158,7 @@ class SoftwareResourceTest {
         given()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(updatedSoftwareJson.toString())
-                .when().put("update")
+                .when().patch(UPDATE_SOFTWARE_ENDPOINT)
                 .then().statusCode(404);
     }
 
@@ -159,21 +166,21 @@ class SoftwareResourceTest {
     @Order(999)
     void testRemovingSoftware() {
         String listBeforeRequest = given()
-                .when().get("as-list")
+                .when().get(SOFTWARE_LIST_ENDPOINT)
                 .then()
                 .extract().body().asString();
 
         given()
                 .contentType(MediaType.TEXT_PLAIN)
                 .body("React")
-                .when().delete("remove")
+                .when().delete(REMOVE_SOFTWARE_ENDPOINT)
                 .then().statusCode(200);
 
         String listAfterRequest = given()
-                .when().get("as-list")
+                .when().get(SOFTWARE_LIST_ENDPOINT)
                 .then()
                 .extract().body().asString();
 
-        Assertions.assertNotEquals(listBeforeRequest, listAfterRequest);
+        Assertions.assertNotEquals(listBeforeRequest, listAfterRequest, "Removing software should change the software list");
     }
 }

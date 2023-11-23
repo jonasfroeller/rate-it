@@ -8,17 +8,35 @@ import java.util.regex.Pattern;
 @Entity
 
 @NamedQueries({
+        @NamedQuery(name = Software.QUERY_GET_ONE, query = "SELECT s FROM Software s WHERE s.name LIKE :name"),
         @NamedQuery(name = Software.QUERY_GET_ALL, query = "SELECT s FROM Software s ORDER BY s.name"),
-        @NamedQuery(name = Software.QUERY_GET_ONE, query = "SELECT s FROM Software s WHERE s.name = :name")
+        @NamedQuery(name = Software.QUERY_GET_ALL_HAVING_DESCRIPTION, query = "SELECT s FROM Software s WHERE s.description IS NOT NULL AND s.description NOT LIKE '' ORDER BY s.name"),
+        @NamedQuery(name = Software.QUERY_GET_ALL_HAVING_WEBSITE, query = "SELECT s FROM Software s WHERE s.website IS NOT NULL AND s.website NOT LIKE '' ORDER BY s.name"),
+        @NamedQuery(name = Software.QUERY_GET_ALL_HAVING_REPOSITORY, query = "SELECT s FROM Software s WHERE s.repository IS NOT NULL AND s.repository NOT LIKE '' ORDER BY s.name"),
+        @NamedQuery(name = Software.QUERY_GET_ALL_BEING_OPEN_SOURCE, query = "SELECT s FROM Software s WHERE s.isOpenSource = true ORDER BY s.name"),
+        @NamedQuery(name = Software.QUERY_GET_ALL_COUNT, query = "SELECT COUNT(s) FROM Software s"),
+        @NamedQuery(name = Software.QUERY_GET_ALL_HAVING_DESCRIPTION_COUNT, query = "SELECT COUNT(s) FROM Software s WHERE s.description IS NOT NULL AND s.description NOT LIKE ''"),
+        @NamedQuery(name = Software.QUERY_GET_ALL_HAVING_WEBSITE_COUNT, query = "SELECT COUNT(s) FROM Software s WHERE s.website IS NOT NULL AND s.website NOT LIKE ''"),
+        @NamedQuery(name = Software.QUERY_GET_ALL_HAVING_REPOSITORY_COUNT, query = "SELECT COUNT(s) FROM Software s WHERE s.repository IS NOT NULL AND s.repository NOT LIKE ''"),
+        @NamedQuery(name = Software.QUERY_GET_ALL_BEING_OPEN_SOURCE_COUNT, query = "SELECT COUNT(s) FROM Software s WHERE s.isOpenSource = true")
 })
 
 public class Software {
     public static final String QUERY_GET_ALL = "Software.GET.all";
+    public static final String QUERY_GET_ALL_HAVING_DESCRIPTION = "Software.GET.all.having.description";
+    public static final String QUERY_GET_ALL_HAVING_WEBSITE = "Software.GET.all.having.website";
+    public static final String QUERY_GET_ALL_HAVING_REPOSITORY = "Software.GET.all.having.repository";
+    public static final String QUERY_GET_ALL_BEING_OPEN_SOURCE = "Software.GET.all.being.openSource";
+    public static final String QUERY_GET_ALL_COUNT = "Software.GET.all.count()";
+    public static final String QUERY_GET_ALL_HAVING_DESCRIPTION_COUNT = "Software.GET.all.having.description.count()";
+    public static final String QUERY_GET_ALL_HAVING_WEBSITE_COUNT = "Software.GET.all.having.website.count()";
+    public static final String QUERY_GET_ALL_HAVING_REPOSITORY_COUNT = "Software.GET.all.having.repository.count()";
+    public static final String QUERY_GET_ALL_BEING_OPEN_SOURCE_COUNT = "Software.GET.all.being.openSource.count()";
     public static final String QUERY_GET_ONE = "Software.GET.one";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
     private String name;
     private String description;
     private String website;
@@ -68,7 +86,15 @@ public class Software {
         return matcher.matches();
     }
 
-    public int getId() {
+    public void update(Software software) {
+        this.setName(software.name);
+        this.setDescription(software.description);
+        this.setWebsite(software.website);
+        this.setRepository(software.repository);
+        this.setIsOpenSource(software.isOpenSource);
+    }
+
+    public long getId() {
         return id;
     }
 
@@ -102,7 +128,7 @@ public class Software {
         if (website != null && isValidLink(website)) {
             this.website = website;
         } else {
-            throw new IllegalArgumentException("Website url is not a valid url!");
+            if (website != null) throw new IllegalArgumentException("Website url is not a valid url!");
         }
     }
 
@@ -114,7 +140,7 @@ public class Software {
         if (repository != null && isValidLink(repository)) {
             this.repository = repository;
         } else {
-            throw new IllegalArgumentException("Repository url is not a valid url!");
+            if (repository != null) throw new IllegalArgumentException("Repository url is not a valid url!");
         }
     }
 

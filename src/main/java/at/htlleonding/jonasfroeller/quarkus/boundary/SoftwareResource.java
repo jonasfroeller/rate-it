@@ -32,6 +32,14 @@ public class SoftwareResource {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
+    @Path("/replace")
+    public boolean replaceSoftware(Software software) {
+        return this.softwareRepository.replaceSoftware(software);
+    }
+
+    @PATCH
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     @Path("/update")
     public boolean updateSoftware(Software software) {
         return this.softwareRepository.updateSoftware(software);
@@ -48,8 +56,8 @@ public class SoftwareResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{softwareName}")
-    public Software getSoftware(@PathParam("softwareName") String name) {
-        return this.softwareRepository.getSoftware(name);
+    public Response getSoftware(@PathParam("softwareName") String name) {
+        return this.softwareRepository.getSoftware(name) != null ? Response.ok(this.softwareRepository.getSoftware(name)).build() : Response.status(404).build();
     }
 
     @GET
@@ -97,35 +105,35 @@ public class SoftwareResource {
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/amount")
-    public int getAmount() {
+    public long getAmount() {
         return this.softwareRepository.getAmount();
     }
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/amount/having/description")
-    public int getAmountHavingDescription() {
+    public long getAmountHavingDescription() {
         return this.softwareRepository.getAmountHavingDescription();
     }
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/amount/having/website")
-    public int getAmountHavingWebsite() {
+    public long getAmountHavingWebsite() {
         return this.softwareRepository.getAmountHavingWebsite();
     }
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/amount/having/repository")
-    public int getAmountHavingRepository() {
+    public long getAmountHavingRepository() {
         return this.softwareRepository.getAmountHavingRepository();
     }
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/amount/having/open-source")
-    public int getAmountOpenSource() {
+    public long getAmountOpenSource() {
         return this.softwareRepository.getAmountBeingOpenSource();
     }
 }

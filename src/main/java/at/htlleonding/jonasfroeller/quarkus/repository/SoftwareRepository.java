@@ -7,11 +7,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Response;
 
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 @ApplicationScoped
 public class SoftwareRepository {
@@ -21,22 +21,21 @@ public class SoftwareRepository {
     @Transactional
     public Software addSoftware(Software software) {
         if (software == null) {
-            return null;
+            throw new ClientErrorException("Software is invalid!", Response.status(400).build());
         }
 
         String softwareName = software.getName();
         if (this.getSoftware(softwareName) != null) {
-            throw new IllegalArgumentException(String.format("Software with name equal to %s already exists!", softwareName));
+            throw new ClientErrorException(String.format("Software with name equal to %s already exists!", softwareName), Response.status(400).build());
         }
 
         this.entityManager.persist(software);
         return software;
     }
 
-    @Transactional
-    public boolean updateSoftware(Software software) {
+    public Software findSoftware(Software software) {
         if (software == null) {
-            return false;
+            throw new ClientErrorException("Software is invalid!", Response.status(400).build());
         }
 
         String softwareName = software.getName();
@@ -45,15 +44,34 @@ public class SoftwareRepository {
             throw new NotFoundException(String.format("Software with name equal to %s doesn't exist!", softwareName));
         }
 
+        return softwareFound;
+    }
+
+    @Transactional
+    public boolean replaceSoftware(Software software) {
+        Software softwareFound = findSoftware(software);
+
         this.entityManager.remove(softwareFound);
         this.entityManager.persist(software);
         return true;
     }
 
     @Transactional
-    public boolean removeSoftware(String name) {
-        Software software = this.getSoftware(name);
+    public boolean updateSoftware(Software software) {
+        Software softwareFound = findSoftware(software);
 
+        Software s = this.entityManager.merge(softwareFound);
+        s.update(software);
+        return true;
+    }
+
+    @Transactional
+    public boolean removeSoftware(String name) {
+        if (name == null) {
+            throw new ClientErrorException("Software is invalid!", Response.status(400).build());
+        }
+
+        Software software = this.getSoftware(name);
         if (software == null) {
             throw new NotFoundException(String.format("Software with name equal to %s doesn't exist!", name));
         }
@@ -67,35 +85,19 @@ public class SoftwareRepository {
     }
 
     public List<Software> getEverySoftwareHavingDescription() {
-        return new LinkedList<>(
-                this.getEverySoftware().stream()
-                        .filter(software -> Objects.nonNull(software.getDescription()))
-                        .toList()
-        );
+        return this.entityManager.createNamedQuery(Software.QUERY_GET_ALL_HAVING_DESCRIPTION, Software.class).getResultList();
     }
 
     public List<Software> getEverySoftwareHavingWebsite() {
-        return new LinkedList<>(
-                this.getEverySoftware().stream()
-                        .filter(software -> Objects.nonNull(software.getWebsite()))
-                        .toList()
-        );
+        return this.entityManager.createNamedQuery(Software.QUERY_GET_ALL_HAVING_WEBSITE, Software.class).getResultList();
     }
 
     public List<Software> getEverySoftwareHavingRepository() {
-        return new LinkedList<>(
-                this.getEverySoftware().stream()
-                        .filter(software -> Objects.nonNull(software.getRepository()))
-                        .toList()
-        );
+        return this.entityManager.createNamedQuery(Software.QUERY_GET_ALL_HAVING_REPOSITORY, Software.class).getResultList();
     }
 
     public List<Software> getEverySoftwareBeingOpenSource() {
-        return new LinkedList<>(
-                this.getEverySoftware().stream()
-                        .filter(Software::isOpenSource)
-                        .toList()
-        );
+        return this.entityManager.createNamedQuery(Software.QUERY_GET_ALL_BEING_OPEN_SOURCE, Software.class).getResultList();
     }
 
     public Software getSoftware(String name) {
@@ -109,23 +111,23 @@ public class SoftwareRepository {
         }
     }
 
-    public int getAmount() {
-        return this.getEverySoftware().size();
+    public long getAmount() {
+        return this.entityManager.createNamedQuery(Software.QUERY_GET_ALL_COUNT, long.class).getSingleResult();
     }
 
-    public int getAmountHavingDescription() {
-        return this.getEverySoftwareHavingDescription().size();
+    public long getAmountHavingDescription() {
+        return this.entityManager.createNamedQuery(Software.QUERY_GET_ALL_HAVING_DESCRIPTION_COUNT, long.class).getSingleResult();
     }
 
-    public int getAmountHavingWebsite() {
-        return this.getEverySoftwareHavingWebsite().size();
+    public long getAmountHavingWebsite() {
+        return this.entityManager.createNamedQuery(Software.QUERY_GET_ALL_HAVING_WEBSITE_COUNT, long.class).getSingleResult();
     }
 
-    public int getAmountHavingRepository() {
-        return this.getEverySoftwareHavingRepository().size();
+    public long getAmountHavingRepository() {
+        return this.entityManager.createNamedQuery(Software.QUERY_GET_ALL_HAVING_REPOSITORY_COUNT, long.class).getSingleResult();
     }
 
-    public int getAmountBeingOpenSource() {
-        return this.getEverySoftwareBeingOpenSource().size();
+    public long getAmountBeingOpenSource() {
+        return this.entityManager.createNamedQuery(Software.QUERY_GET_ALL_BEING_OPEN_SOURCE_COUNT, long.class).getSingleResult();
     }
 }
