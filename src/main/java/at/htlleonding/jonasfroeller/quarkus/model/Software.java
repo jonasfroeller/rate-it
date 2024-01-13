@@ -1,12 +1,15 @@
 package at.htlleonding.jonasfroeller.quarkus.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Entity
-
+@Table(name = "SOFTWARE")
 @NamedQueries({
         @NamedQuery(name = Software.QUERY_GET_ONE, query = "SELECT s FROM Software s WHERE s.name LIKE :name"),
         @NamedQuery(name = Software.QUERY_GET_ALL, query = "SELECT s FROM Software s ORDER BY s.name"),
@@ -41,7 +44,11 @@ public class Software {
     private String description;
     private String website;
     private String repository;
+    @Column(name = "is_open_source")
     private boolean isOpenSource;
+    @OneToMany(mappedBy = "software")
+    @JsonIgnoreProperties({"software"})
+    private List<Rating> ratings = new LinkedList<>();
 
     public Software() {
     }
@@ -150,5 +157,13 @@ public class Software {
 
     public void setIsOpenSource(boolean isOpenSource) {
         this.isOpenSource = isOpenSource;
+    }
+
+    public List<Rating> getRatings() {
+        return ratings;
+    }
+
+    public void setRatings(List<Rating> ratings) {
+        this.ratings = ratings;
     }
 }
